@@ -1,8 +1,8 @@
 var baseURL = 'https://blooming-plateau-13338.herokuapp.com/'
 var localURL = 'http://localhost:3000/'
 
-function getMessages(localURL) {
-  $.get(localURL)
+function getMessages(baseURL) {
+  $.get(baseURL)
     .then(displayMessages)
 }
 
@@ -59,12 +59,12 @@ function displayMessages(data) {
     event.preventDefault()
     var id = Number((event.target.id).slice(-1))
     var currentRating = Number($('#rating-' + id).text ())
-    $.get(localURL + id)
+    $.get(baseURL + id)
     .then(function(data){
     var rating = data.rating
       $.ajax({
         type: 'PUT',
-        url: localURL + id,
+        url: baseURL + id,
         data: {
           title: data.title,
           message: data.message,
@@ -84,12 +84,12 @@ function displayMessages(data) {
     event.preventDefault()
     var id = Number((event.target.id).slice(-1))
     var currentRating = Number($('#rating-' + id).text ())
-    $.get(localURL + id)
+    $.get(baseURL + id)
     .then(function(data){
     var rating = data.rating
       $.ajax({
         type: 'PUT',
-        url: localURL + id,
+        url: baseURL + id,
         data: {
           title: data.title,
           message: data.message,
@@ -138,25 +138,25 @@ function submitSignUp() {
     'password': password,
     'username': username
   }
-  $.post(localURL + 'users', formData)
+  $.post(baseURL + 'users', formData)
   $('#sign-up-modal').modal('hide')
   $('.message-data').empty()
   alertSuccessfulSignup()
   getUserData()
 }
 
-function getUserData(id) {
-  $.get(localURL + 'users/1')
-    .then(displayUserPage)
-    .then(function() {
-      $(document).on('click', '#submit-new-message', function(event) {
-        $.get(localURL + 'users/1')
-          .then(data => {
-            addMessage()
-            $('.message-data').empty()
-            loadAddMessageForm()
-            getMessages(localURL)
-          })
+
+function getUserData(id){
+  $.get(baseURL + 'users/1')
+  .then(displayUserPage)
+  .then( function() {
+    $(document).on('click', '#submit-new-message', function(event){
+      $.get(baseURL + 'users/1')
+      .then(data => {
+        addMessage()
+        $('.message-data').empty()
+        loadAddMessageForm()
+        getMessages(baseURL)
       })
     })
 }
@@ -165,25 +165,26 @@ function addMessage() {
   var id = 0
   var messageTitle = $('#message-title').val()
   var messageText = $('#message-text').val()
-  $.get(localURL + 'users/1')
-    .then(data => {
-      id = data[0].id
-      var rating = 0
-      var postData = {
-        title: messageTitle,
-        message: messageText,
-        rating: rating,
-        user_id: id
-      }
-      if (messageTitle && messageText) {
-        $.post(localURL + '1', postData)
-          .then(() => {
-            $('.message-data').empty()
-            loadAddMessageForm()
-            getMessages(localURL)
-          })
-      }
-    })
+
+  $.get(baseURL + 'users/1')
+  .then(data => {
+    id = data[0].id
+    var rating = 0
+    var postData = {
+      title: messageTitle,
+      message: messageText,
+      rating: rating,
+      user_id: id
+    }
+    if(messageTitle && messageText) {
+      $.post(baseURL + '1', postData)
+      .then(()=> {
+        $('.message-data').empty()
+        loadAddMessageForm()
+        getMessages(baseURL)
+      })
+    }
+  })
 }
 
 function loadAddMessageForm(id) {
@@ -245,7 +246,7 @@ function displayUserPage(id) {
   // appendUserData(id);
   editNavButtons(id)
   loadAddMessageForm(id)
-  getMessages(localURL)
+  getMessages(baseURL)
 }
 
 function alertSuccessfulSignup() {
@@ -290,7 +291,7 @@ $(document).on('click', '#my-posts', function(id){
   var id = 1
   console.log("you clicked me!");
   $('.message-data').empty()
-  $.get(localURL + id)
+  $.get(baseURL + id)
   .then(function(data){
     displayMessages(data)
     console.log(data);
@@ -304,6 +305,7 @@ function deleteMessage() {
     method: 'DELETE'
   })
 }
+
 
 
 function seeComments(id) {
@@ -324,7 +326,10 @@ $('.emptyGuy').append(`<h3>blahhh</h3>`)
   //   </div>
   // </div>`)
 }
-getMessages(localURL)
+
+
+getMessages(baseURL)
+
 
 
 $('#sign-in').on('click', loadSignIn)
