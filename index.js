@@ -11,7 +11,7 @@ function displayMessages(data) {
     $('.message-data').append(
       `
         <div class="card">
-          <div class="card-header">Post by: ${data.username}</div>
+          <div class="card-header post-by">Post by: ${data.username}</div>
           <div class="row">
             <div class="col-sm-9">
               <div class="card-block">
@@ -21,9 +21,10 @@ function displayMessages(data) {
             </div>
             <div class="col-sm-3 card-block text-center">
               <div class="rating rounded">
-                <p id="rating-${data.id}">${data.rating}</p>
-                <button type="button" id="up-${data.id}" class="btn btn-outline-success upvote"><i class="fa fa-hand-o-up fa-2x" aria-hidden="true"></i></button>
-                <button type="button" id="down-${data.id}" class="btn btn-outline-danger downvote"><i class="fa fa-hand-o-down fa-2x" aria-hidden="true"></i></button>
+                <p id="rating-${data.message_id}">${data.rating}</p>
+                <button type="button" id="up-${data.message_id}" class="btn btn-outline-success upvote"><i id="up-${data.message_id}" class="fa fa-hand-o-up fa-2x" aria-hidden="true"></i></button>
+                <button type="button" id="down-${data.message_id}" class="btn btn-outline-danger downvote"><i id="down-${data.message_id}" class="fa fa-hand-o-down fa-2x" aria-hidden="true"></i></button>
+
               </div>
               <div id="delete" class="delete">
               <button type="button" id= "deleteButton" class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i>Delete</button>
@@ -53,17 +54,56 @@ function displayMessages(data) {
     // $(document).on('click', '.seeComments', seeComments)
   })
   //this is where I was last working
-  $('.upvote').on('click', function() {
-    var id = (this.id).slice(-1)
-    var currentRating = Number($('#rating-' + id).text())
-    //create post request here to send back the new rating and remove the below line
-    $('#rating-' + id).text(currentRating + 1)
+
+  $('.upvote').on('click', function(event){
+    event.preventDefault()
+    var id = Number((event.target.id).slice(-1))
+    var currentRating = Number($('#rating-' + id).text ())
+    $.get(localURL + id)
+    .then(function(data){
+    var rating = data.rating
+      $.ajax({
+        type: 'PUT',
+        url: localURL + id,
+        data: {
+          title: data.title,
+          message: data.message,
+          rating: data.rating + 1,
+          user_id: data.user_id
+        }
+      })
+      .then(function(data){
+        let rating = data[0].rating;
+        // getMessages()
+        $('#rating-' + id).text(rating)
+      })
+    })
   })
-  $('.downvote').on('click', function() {
-    var id = (this.id).slice(-1)
-    var currentRating = Number($('#rating-' + id).text())
-    //create post request here to send back the new rating and remove the below line
-    $('#rating-' + id).text(currentRating - 1)
+
+  $('.downvote').on('click', function(event){
+    event.preventDefault()
+    var id = Number((event.target.id).slice(-1))
+    var currentRating = Number($('#rating-' + id).text ())
+    $.get(localURL + id)
+    .then(function(data){
+    var rating = data.rating
+      $.ajax({
+        type: 'PUT',
+        url: localURL + id,
+        data: {
+          title: data.title,
+          message: data.message,
+          rating: data.rating - 1,
+          user_id: data.user_id
+        }
+      })
+      .then(function(data){
+        let rating = data[0].rating;
+        // getMessages()
+        $('#rating-' + id).text(rating)
+      })
+    })
+
   })
 }
 
@@ -237,39 +277,34 @@ function editNavButtons(id) {
           <p>Email: ${id[0].email}</p>
         </div>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item myPosts" href="#">My Posts</a>
+
+        <a class="dropdown-item" id="my-posts" href="#">My Posts</a>
+
       </div>
     </div>
       <button class="btn btn-primary" type="submit">Sign Out</button>
     `
   )
 }
+$(document).on('click', '#my-posts', function(id){
+  var id = 1
+  console.log("you clicked me!");
+  $('.message-data').empty()
+  $.get(localURL + id)
+  .then(function(data){
+    displayMessages(data)
+    console.log(data);
+    $('.post-by').text("Post by: You")
+  })
+})
 
 function deleteMessage() {
-  // var id = $('#delete').val()
-  // if(id) {
   $.ajax({
     url: `http://localhost:3000/`,
     method: 'DELETE'
   })
-
-  // $(`.message-data${id}`).remove()
-  // }
-  // }
 }
 
-// $(() => {
-//   const token = localStorage.getItem('token')
-//
-//   const parsedToken = parseJWT(token)
-//   console.log(parsedToken);
-// $.get(`localhost${parsedToken.id}`)
-//
-
-function seeMyPosts(id) {
-  $('.message-data').empty()
-  $.get(localURL + id)
-}
 
 function seeComments(id) {
   console.log(id.target.id);
@@ -297,10 +332,12 @@ $('#sign-up').on('click', loadSignUp)
 $('.submit-sign-in').on('click', submitSignIn)
 $('#submit-sign-up').on('click', submitSignUp)
 $('#deleteButton').on('click', deleteMessage)
+
 $('.myPosts').on('click', seeMyPosts)
 $(document).on('click', '.myPosts', seeMyPosts)
 $(document).on('click', '.seeComments', seeComments)
 $('.custom-control-input').on('click', function() {
+
   $('.hide').toggle()
 })
 
