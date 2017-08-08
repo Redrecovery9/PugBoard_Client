@@ -17,71 +17,49 @@ function displayMessages(data) {
               <div class="card-block">
                 <h4 class="card-title">${data.title}</h4>
                 <p class="card-text">${data.message}</p>
-                <a href="#" class="btn btn-seconday">Read More</a>
               </div>
             </div>
             <div class="col-sm-3 card-block text-center">
               <div class="rating rounded">
                 <p id="rating-${data.id}">${data.rating}</p>
-                <button type="button" id="up-${data.id}" class="btn btn-outline-success upvote"><i id="up-${data.id}" class="fa fa-hand-o-up fa-2x" aria-hidden="true"></i></button>
-                <button type="button" id="down-${data.id}" class="btn btn-outline-danger downvote"><i id="down-${data.id}" class="fa fa-hand-o-down fa-2x" aria-hidden="true"></i></button>
+                <button type="button" id="up-${data.id}" class="btn btn-outline-success upvote"><i class="fa fa-hand-o-up fa-2x" aria-hidden="true"></i></button>
+                <button type="button" id="down-${data.id}" class="btn btn-outline-danger downvote"><i class="fa fa-hand-o-down fa-2x" aria-hidden="true"></i></button>
+              </div>
+              <div id="delete" class="delete">
+              <button type="button" id= "deleteButton" class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i>Delete</button>
               </div>
             </div>
           </div>
           <div class="card-footer text-muted">
-            <p class="num-of-comments">6 Comments</p>
-            <a href="#" class="see-thread btn btn-seconday">See Thread</a>
+            <p>
+            <a id="${data.user_id}" class="seeComments btn btn-primary" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+            Comments
+            </a>
+            </p>
+<div class="collapse" id="collapseExample">
+  <div class="card card-block">
+  <div class="emptyGuy"></div>
+  <div class="form-group">
+    <label for="comment-text">Add a Comment</label>
+    <textarea class="form-control" id="message-text" rows="3"></textarea>
+    <button type="button" id="${data.user_id}" class="btn btn-success">Submit Comment</button>
+  </div>
+  </div>
+</div>
           </div>
         </div>
       `
     )
+    // $(document).on('click', '.seeComments', seeComments)
   })
   //this is where I was last working
-  $('.upvote').on('click', function(event){
-    event.preventDefault()
-    var id =Number((event.target.id).slice(-1))
-
-    let message = {
-      title: data.title,
-      message: data.message,
-      rating: data.rating + 1,
-      user_id: data.user_id
-    }
-
-    $.ajax({
-      url: localURL +id,
-      method: 'PUT',
-      data: message,
-    success: function(message) {
-      $.get(localURL)
-      .then(getMessages)
-    }
-    })
-    // var currentRating = Number($('#rating-' + id).text ())
-
-    // $.get(localURL + id)
-    // .then(function(data){
-    // var rating = data.rating
-    //   $.ajax({
-    //     type: 'PUT',
-    //     url: localURL + id,
-    //     data: {
-    //       title: data.title,
-    //       message: data.message,
-    //       rating: data.rating + 1,
-    //       user_id: data.user_id
-    //     }
-    //   })
-    //   .then(function(){
-    //     console.log("yay");
-    //     displayMessages()
-    //   })
-
-    //   $('#rating-' + id).text(rating)
-    // })
-
+  $('.upvote').on('click', function() {
+    var id = (this.id).slice(-1)
+    var currentRating = Number($('#rating-' + id).text())
+    //create post request here to send back the new rating and remove the below line
+    $('#rating-' + id).text(currentRating + 1)
   })
-  $('.downvote').on('click', function(){
+  $('.downvote').on('click', function() {
     var id = (this.id).slice(-1)
     var currentRating = Number($('#rating-' + id).text())
     //create post request here to send back the new rating and remove the below line
@@ -127,20 +105,20 @@ function submitSignUp() {
   getUserData()
 }
 
-function getUserData(id){
+function getUserData(id) {
   $.get(localURL + 'users/1')
-  .then(displayUserPage)
-  .then( function() {
-    $(document).on('click', '#submit-new-message', function(event){
-      $.get(localURL + 'users/1')
-      .then(data => {
-        addMessage()
-        $('.message-data').empty()
-        loadAddMessageForm()
-        getMessages(localURL)
+    .then(displayUserPage)
+    .then(function() {
+      $(document).on('click', '#submit-new-message', function(event) {
+        $.get(localURL + 'users/1')
+          .then(data => {
+            addMessage()
+            $('.message-data').empty()
+            loadAddMessageForm()
+            getMessages(localURL)
+          })
       })
     })
-  })
 }
 
 function addMessage() {
@@ -148,29 +126,29 @@ function addMessage() {
   var messageTitle = $('#message-title').val()
   var messageText = $('#message-text').val()
   $.get(localURL + 'users/1')
-  .then(data => {
-    id = data[0].id
-    var rating = 0
-    var postData = {
-      title: messageTitle,
-      message: messageText,
-      rating: rating,
-      user_id: id
-    }
-    if(messageTitle && messageText) {
-      $.post(localURL + '1', postData)
-      .then(()=> {
-        $('.message-data').empty()
-        loadAddMessageForm()
-        getMessages(localURL)
-      })
-    }
-  })
+    .then(data => {
+      id = data[0].id
+      var rating = 0
+      var postData = {
+        title: messageTitle,
+        message: messageText,
+        rating: rating,
+        user_id: id
+      }
+      if (messageTitle && messageText) {
+        $.post(localURL + '1', postData)
+          .then(() => {
+            $('.message-data').empty()
+            loadAddMessageForm()
+            getMessages(localURL)
+          })
+      }
+    })
 }
 
-function loadAddMessageForm(id){
+function loadAddMessageForm(id) {
   $('.message-data').append(`
-    <div class="card">
+    <div class="card random">
       <div class="card-header" role="tab" id="heading-add-message">
         <h5 class="text-center mb-0">
           <a class="collapsed text-center" data-toggle="collapse" data-parent="#accordion" href="#add-message" aria-expanded="false" aria-controls="add-message">
@@ -219,19 +197,20 @@ function loadAddMessageForm(id){
       </div>
     </div>
   `)
+
 }
 
 
-function displayUserPage(id){
+function displayUserPage(id) {
   // appendUserData(id);
   editNavButtons(id)
   loadAddMessageForm(id)
   getMessages(localURL)
 }
 
-function alertSuccessfulSignup(){
+function alertSuccessfulSignup() {
   $('.user-data').append(
-  `
+    `
   <div class="alert alert-success alert-dismissible fade show" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
@@ -242,7 +221,7 @@ function alertSuccessfulSignup(){
   )
 }
 
-function editNavButtons(id){
+function editNavButtons(id) {
   $('#sign-in').hide()
   $('#sign-up').hide()
   $('.form-inline').append(
@@ -258,7 +237,7 @@ function editNavButtons(id){
           <p>Email: ${id[0].email}</p>
         </div>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="#">My Posts</a>
+        <a class="dropdown-item myPosts" href="#">My Posts</a>
       </div>
     </div>
       <button class="btn btn-primary" type="submit">Sign Out</button>
@@ -266,7 +245,50 @@ function editNavButtons(id){
   )
 }
 
+function deleteMessage() {
+  // var id = $('#delete').val()
+  // if(id) {
+  $.ajax({
+    url: `http://localhost:3000/`,
+    method: 'DELETE'
+  })
 
+  // $(`.message-data${id}`).remove()
+  // }
+  // }
+}
+
+// $(() => {
+//   const token = localStorage.getItem('token')
+//
+//   const parsedToken = parseJWT(token)
+//   console.log(parsedToken);
+// $.get(`localhost${parsedToken.id}`)
+//
+
+function seeMyPosts(id) {
+  $('.message-data').empty()
+  $.get(localURL + id)
+}
+
+function seeComments(id) {
+  console.log(id.target.id);
+$('.emptyGuy').append(`<h3>blahhh</h3>`)
+  // $('.random').append(`
+  //   <p>
+  //     <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+  //     Add a Comment
+  //     </a>
+  // </p>
+  // <div class="collapse" id="collapseExample">
+  //   <div class="card card-block">
+  //     <div class="form-group">
+  //       <label for="message-text">Message</label>
+  //       <textarea class="form-control" id="message-text" rows="3"></textarea>
+  //     </div>
+  //   </div>
+  // </div>`)
+}
 getMessages(localURL)
 
 
@@ -274,7 +296,11 @@ $('#sign-in').on('click', loadSignIn)
 $('#sign-up').on('click', loadSignUp)
 $('.submit-sign-in').on('click', submitSignIn)
 $('#submit-sign-up').on('click', submitSignUp)
-$('.custom-control-input').on('click', function(){
+$('#deleteButton').on('click', deleteMessage)
+$('.myPosts').on('click', seeMyPosts)
+$(document).on('click', '.myPosts', seeMyPosts)
+$(document).on('click', '.seeComments', seeComments)
+$('.custom-control-input').on('click', function() {
   $('.hide').toggle()
 })
 
